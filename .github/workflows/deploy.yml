@@ -51,10 +51,9 @@ jobs:
             APP_DIR=/home/ubuntu/optomkorea
             API_DIR=$APP_DIR/apps/api
 
-            # ── Load nvm so Node 20 is used ─────────────────────
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            nvm use 20
+            # ── Use system Node 20 (installed via apt) ──────────
+            export PATH="/usr/bin:$PATH"
+            node -v   # confirm Node version in logs
 
             # ── Clone repo on first deploy ───────────────────────
             if [ ! -d "$APP_DIR/.git" ]; then
