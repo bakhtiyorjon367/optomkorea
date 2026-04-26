@@ -5,13 +5,11 @@ on:
     branches: [main]
 
 jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest        # GitHub's server — 14GB free, build here
 
-  # ─────────────────────────────────────────
-  # JOB 1 — Build check on GitHub runner
-  # ─────────────────────────────────────────
-  build:
-    runs-on: ubuntu-latest
     steps:
+      # ── 1. Checkout & Build on GitHub runner ────────────
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -25,73 +23,84 @@ jobs:
         with:
           version: latest
 
-      - name: Install dependencies
+      - name: Install all dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build NestJS API
         run: pnpm --filter @koruz/api build
 
-  # ─────────────────────────────────────────
-  # JOB 2 — Deploy to EC2
-  # ─────────────────────────────────────────
-  deploy:
-    needs: build                 # only deploys if build passes
-    runs-on: ubuntu-latest
+      # ── 2. Write .env locally (before upload) ───────────
+      - name: Write .env file
+        run: |
+          cat > apps/api/.env << 'ENVEOF'
+          PORT=${{ secrets.PORT }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          JWT_EXPIRES_IN=${{ secrets.JWT_EXPIRES_IN }}
+          TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}
+          CLIENT_URL=${{ secrets.CLIENT_URL }}
+          MONGODB_URI=${{ secrets.MONGODB_URI }}
+          MONGODB_DB_NAME=${{ secrets.MONGODB_DB_NAME }}
+          ENVEOF
 
-    steps:
-      - name: SSH into EC2 and deploy
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            set -e    # stop on any error
+      # ── 3. Set up SSH ────────────────────────────────────
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-            APP_DIR=/home/ubuntu/optomkorea
-            API_DIR=$APP_DIR/apps/api
+      # ── 4. Upload only dist + config to EC2 (no node_modules!) ──
+      - name: Upload build to EC2
+        run: |
+          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} \
+            "mkdir -p /home/ubuntu/optomkorea/apps/api"
 
-            # ── Use system Node 20 (installed via apt) ──────────
-            export PATH="/usr/bin:$PATH"
-            node -v   # confirm Node version in logs
+          # Copy compiled dist, package.json, .env — NOT node_modules
+          rsync -az --delete \
+            apps/api/dist/ \
+            ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/optomkorea/apps/api/dist/
 
-            # ── Clone repo on first deploy ───────────────────────
-            if [ ! -d "$APP_DIR/.git" ]; then
-              git clone ${{ secrets.REPO_URL }} $APP_DIR
-            fi
+          rsync -az \
+            apps/api/package.json \
+            apps/api/.env \
+            ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/optomkorea/apps/api/
 
-            cd $APP_DIR
-            git pull origin main
+          # Copy workspace root files needed for pnpm
+          rsync -az \
+            package.json \
+            pnpm-workspace.yaml \
+            pnpm-lock.yaml \
+            ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/optomkorea/
 
-            # ── Write .env into apps/api/ ────────────────────────
-            cat > $API_DIR/.env << 'ENVEOF'
-            PORT=${{ secrets.PORT }}
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
-            JWT_EXPIRES_IN=${{ secrets.JWT_EXPIRES_IN }}
-            TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
-            CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}
-            CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}
-            CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}
-            CLIENT_URL=${{ secrets.CLIENT_URL }}
-            MONGODB_URI=${{ secrets.MONGODB_URI }}
-            MONGODB_DB_NAME=${{ secrets.MONGODB_DB_NAME }}
-            ENVEOF
+          # Copy shared internal packages (if api depends on them)
+          rsync -az --delete \
+            packages/ \
+            ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/optomkorea/packages/
 
-            # ── Ensure pnpm is available ─────────────────────────
-            which pnpm || sudo npm install -g pnpm
+      # ── 5. Install prod-only deps on EC2 & restart PM2 ──
+      - name: Install & restart on EC2
+        run: |
+          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} << 'ENDSSH'
+          set -e
+          export PATH="/usr/bin:$PATH"
+          cd /home/ubuntu/optomkorea
 
-            # ── Install all workspace dependencies ───────────────
-            pnpm install --frozen-lockfile
+          # Install ONLY api production dependencies (no devDeps, no mobile)
+          pnpm install --filter @koruz/api... --prod --no-frozen-lockfile
 
-            # ── Build NestJS API ─────────────────────────────────
-            pnpm --filter @koruz/api build
+          # PM2: restart if running, start fresh if not
+          if pm2 list | grep -q "optomkorea"; then
+            pm2 restart optomkorea
+          else
+            pm2 start /home/ubuntu/optomkorea/apps/api/dist/main.js \
+              --name "optomkorea" \
+              --cwd /home/ubuntu/optomkorea/apps/api
+          fi
 
-            # ── PM2: restart if running, start fresh if not ──────
-            if pm2 list | grep -q "optomkorea"; then
-              pm2 restart optomkorea
-            else
-              pm2 start $API_DIR/dist/main.js --name "optomkorea" --cwd $API_DIR
-            fi
-
-            pm2 save
-            echo "✅ optomkorea API deployed successfully"
+          pm2 save
+          echo "✅ Deployed successfully"
+          ENDSSH
