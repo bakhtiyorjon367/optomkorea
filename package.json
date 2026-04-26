@@ -1,0 +1,11 @@
+{
+  "name": "koruz",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "dev:mobile": "pnpm --filter @koruz/mobile dev",
+    "dev:api": "pnpm --filter @koruz/api start:dev",
+    "build:all": "pnpm -r build"
+  }
+}

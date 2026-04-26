@@ -1,0 +1,15 @@
+import { IsMongoId, IsNotEmpty, IsNumber, Min } from 'class-validator';
+
+export class CreateTransferDto {
+  @IsMongoId()
+  @IsNotEmpty()
+  toManagerId!: string;
+
+  @IsMongoId()
+  @IsNotEmpty()
+  productId!: string;
+
+  @IsNumber()
+  @Min(1)
+  quantity!: number;
+}

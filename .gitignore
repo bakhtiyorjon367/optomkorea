@@ -1,0 +1,11 @@
+node_modules
+.env
+.DS_Store
+.cursor
+.dist
+.pnpm-store
+.test
+.uploads
+.env
+PLANNING.md
+TASK.md
