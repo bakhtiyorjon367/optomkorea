@@ -78,7 +78,7 @@ jobs:
             ENVEOF
 
             # ── Ensure pnpm is available ─────────────────────────
-            which pnpm || npm install -g pnpm
+            which pnpm || sudo npm install -g pnpm
 
             # ── Install all workspace dependencies ───────────────
             pnpm install --frozen-lockfile
