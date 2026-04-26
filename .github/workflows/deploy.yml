@@ -31,9 +31,6 @@ jobs:
 
       - name: Build React frontend
         run: pnpm --filter @koruz/mobile build
-        env:
-          VITE_API_URL: /api
-          VITE_TELEGRAM_BOT_NAME: ${{ secrets.TELEGRAM_BOT_NAME }}
 
       # ── 2. Write .env locally (before upload) ───────────
       - name: Write .env file
@@ -63,7 +60,7 @@ jobs:
       - name: Upload build to EC2
         run: |
           ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} \
-            "mkdir -p /home/ubuntu/optomkorea/apps/api"
+            "mkdir -p /home/ubuntu/optomkorea/apps/api /home/ubuntu/optomkorea/apps/mobile/dist"
 
           # Copy compiled dist, package.json, .env — NOT node_modules
           rsync -az --delete \
