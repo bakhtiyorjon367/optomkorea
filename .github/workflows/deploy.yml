@@ -1,13 +1,13 @@
-name: Deploy optomkorea to EC2
+name: Deploy optomkorea API to EC2
 
 on:
   push:
-    branches: [main]          # auto-deploy on every push to main
+    branches: [main]
 
 jobs:
 
   # ─────────────────────────────────────────
-  # JOB 1 — Install & (optionally) test
+  # JOB 1 — Build check on GitHub runner
   # ─────────────────────────────────────────
   build:
     runs-on: ubuntu-latest
@@ -15,46 +15,57 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: Set up Node.js 20
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
-      # - name: Run tests          ← uncomment when you add tests
-      #   run: npm test
+      - name: Build NestJS API
+        run: pnpm --filter @koruz/api build
 
   # ─────────────────────────────────────────
   # JOB 2 — Deploy to EC2
   # ─────────────────────────────────────────
   deploy:
-    needs: build               # only runs if build job passes
+    needs: build                 # only deploys if build passes
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy via SSH to EC2
+      - name: SSH into EC2 and deploy
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            set -e    # stop immediately on any error
+            set -e    # stop on any error
 
             APP_DIR=/home/ubuntu/optomkorea
+            API_DIR=$APP_DIR/apps/api
 
-            # ── Clone repo on first deploy, pull on subsequent ──
+            # ── Load nvm so Node 20 is used ─────────────────────
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm use 20
+
+            # ── Clone repo on first deploy ───────────────────────
             if [ ! -d "$APP_DIR/.git" ]; then
-              git clone ${{ secrets.GITHUB_REPO_URL }} $APP_DIR
+              git clone ${{ secrets.REPO_URL }} $APP_DIR
             fi
 
             cd $APP_DIR
             git pull origin main
 
-            # ── Write .env from GitHub Secrets ──────────────────
-            cat > .env << 'ENVEOF'
+            # ── Write .env into apps/api/ ────────────────────────
+            cat > $API_DIR/.env << 'ENVEOF'
             PORT=${{ secrets.PORT }}
             JWT_SECRET=${{ secrets.JWT_SECRET }}
             JWT_EXPIRES_IN=${{ secrets.JWT_EXPIRES_IN }}
@@ -67,15 +78,21 @@ jobs:
             MONGODB_DB_NAME=${{ secrets.MONGODB_DB_NAME }}
             ENVEOF
 
-            # ── Install production dependencies ──────────────────
-            npm ci --omit=dev
+            # ── Ensure pnpm is available ─────────────────────────
+            which pnpm || npm install -g pnpm
+
+            # ── Install all workspace dependencies ───────────────
+            pnpm install --frozen-lockfile
+
+            # ── Build NestJS API ─────────────────────────────────
+            pnpm --filter @koruz/api build
 
             # ── PM2: restart if running, start fresh if not ──────
             if pm2 list | grep -q "optomkorea"; then
               pm2 restart optomkorea
             else
-              pm2 start npm --name "optomkorea" -- start
+              pm2 start $API_DIR/dist/main.js --name "optomkorea" --cwd $API_DIR
             fi
 
             pm2 save
-            echo "✅ Deployed successfully"
+            echo "✅ optomkorea API deployed successfully"
