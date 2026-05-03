@@ -95,7 +95,8 @@ export class ProductsController {
   @UseInterceptors(
     FilesInterceptor('images', 5, {
       storage: multer.memoryStorage(),
-      limits: { fileSize: 6 * 1024 * 1024 },
+      // Mobile sends client-compressed JPEGs; headroom for rare large files / slow networks
+      limits: { fileSize: 12 * 1024 * 1024 },
       fileFilter: (_req, file, cb) => {
         const allowed = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
         if (!allowed.has(file.mimetype)) {

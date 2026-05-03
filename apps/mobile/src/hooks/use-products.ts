@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { compressImageFileForUpload } from '../lib/compress-image-for-upload';
 import { api } from '../lib/api';
 
 type Product = {
@@ -104,8 +105,11 @@ export function useUploadProductImages() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ productId, files }: { productId: string; files: File[] }) => {
+      const compressed = await Promise.all(
+        files.map((f) => (f.type.startsWith('image/') ? compressImageFileForUpload(f) : f)),
+      );
       const formData = new FormData();
-      for (const f of files) {
+      for (const f of compressed) {
         formData.append('images', f);
       }
       return api.postFormData<{ data: { urls: string[] } }>(`/products/${productId}/images`, formData);

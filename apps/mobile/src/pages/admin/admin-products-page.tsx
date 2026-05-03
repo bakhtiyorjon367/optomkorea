@@ -41,10 +41,12 @@ import {
   useProductSearch,
   useUploadProductImages,
 } from '../../hooks/use-products';
+import { IMAGE_COMPRESS_FAILED } from '../../lib/compress-image-for-upload';
 import { productThumbSrcForDisplay } from '../../lib/product-images';
 import { useCreateShipment } from '../../hooks/use-shipments';
 import { useCategories } from '../../hooks/use-categories';
 import { formatUZS } from '../../lib/format';
+import './admin-products-page.css';
 
 type ProductForm = {
   name: string;
@@ -82,11 +84,13 @@ export function AdminProductsPage() {
   const [shipmentNotes, setShipmentNotes] = useState('');
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<ProductForm>(EMPTY_FORM);
-  const [imageUrl, setImageUrl] = useState('');
   type PendingPreview = { file: File; previewUrl: string };
   const [pendingPreviews, setPendingPreviews] = useState<PendingPreview[]>([]);
   const [toast, setToast] = useState('');
   const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null);
+
+  const isSaveLoading =
+    createMutation.isPending || updateMutation.isPending || uploadImagesMutation.isPending;
 
   const clearPendingUploads = () => {
     setPendingPreviews((prev) => {
@@ -148,6 +152,10 @@ export function AdminProductsPage() {
       setToast(t('common.saved'));
       setShowModal(false);
     } catch (err) {
+      if (err instanceof Error && err.message === IMAGE_COMPRESS_FAILED) {
+        setToast(t('products.imageCompressFailed'));
+        return;
+      }
       setToast(err instanceof Error ? err.message : 'Error');
     }
   };
@@ -174,13 +182,6 @@ export function AdminProductsPage() {
       onSuccess: () => setToast(t('common.deleted')),
       onError: (err) => setToast(deleteErrorMessage(err)),
     });
-  };
-
-  const addImage = () => {
-    if (imageUrl.trim() && imageSlotsUsed < 5) {
-      setForm({ ...form, images: [...form.images, imageUrl.trim()] });
-      setImageUrl('');
-    }
   };
 
   const removePendingAt = (index: number) => {
@@ -417,29 +418,15 @@ export function AdminProductsPage() {
                   {t('products.chooseImages')}
                 </IonButton>
               )}
-              {imageSlotsUsed < 5 && (
-                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                  <IonInput
-                    placeholder={t('products.imageUrlPlaceholder')}
-                    value={imageUrl}
-                    onIonInput={(e) => setImageUrl(e.detail.value ?? '')}
-                    style={{ flex: 1 }}
-                  />
-                  <IonButton size="small" onClick={addImage}>
-                    +
-                  </IonButton>
-                </div>
-              )}
             </div>
 
             <IonButton
               expand="block"
-              className="ion-margin-top"
+              className={`ion-margin-top${isSaveLoading ? ' admin-product-save--loading' : ''}`}
               onClick={handleSave}
-              disabled={
-                createMutation.isPending || updateMutation.isPending || uploadImagesMutation.isPending
-              }
+              disabled={isSaveLoading}
             >
+              {isSaveLoading && <span className="admin-product-save__spin" slot="start" aria-hidden />}
               {t('common.save')}
             </IonButton>
           </IonContent>
