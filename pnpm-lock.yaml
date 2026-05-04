@@ -46,6 +46,9 @@ importers:
       cloudinary:
         specifier: ^2.5.1
         version: 2.9.0
+      express:
+        specifier: ^5.2.1
+        version: 5.2.1
       mongoose:
         specifier: ^9.4.1
         version: 9.4.1
