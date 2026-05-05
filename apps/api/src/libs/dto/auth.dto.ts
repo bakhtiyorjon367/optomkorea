@@ -56,3 +56,9 @@ export class TelegramLoginDto {
   @IsNotEmpty()
   hash!: string;
 }
+
+export class TelegramWebAppLoginDto {
+  @IsString()
+  @IsNotEmpty()
+  initData!: string;
+}

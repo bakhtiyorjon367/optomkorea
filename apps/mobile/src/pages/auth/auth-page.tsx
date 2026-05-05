@@ -5,6 +5,7 @@ import {
   IonInput,
   IonItem,
   IonList,
+  IonLoading,
   IonPage,
   IonText,
   IonToast,
@@ -17,6 +18,7 @@ import { sparklesOutline } from 'ionicons/icons';
 import { useAuth } from '../../hooks/use-auth';
 import { api } from '../../lib/api';
 import { TelegramLoginButton } from '../../components/shared/telegram-login-button';
+import { getWebApp, isInsideTelegramMiniApp } from '../../lib/telegram-webapp';
 
 type LoginResponse = {
   data: {
@@ -42,9 +44,13 @@ export function AuthPage() {
   const history = useHistory();
   const { login, isAuthenticated, user } = useAuth();
   const { t } = useTranslation();
+  const isMiniApp = isInsideTelegramMiniApp();
+  const [miniAppFallback, setMiniAppFallback] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(
+    () => isMiniApp && !localStorage.getItem('koruz_token'),
+  );
   const [error, setError] = useState('');
   const [showStaffLogin, setShowStaffLogin] = useState(false);
 
@@ -53,6 +59,52 @@ export function AuthPage() {
       history.replace(getRedirectPath(user.role));
     }
   }, [isAuthenticated, user, history]);
+
+  useEffect(() => {
+    if (!isMiniApp || miniAppFallback) {
+      return;
+    }
+    if (localStorage.getItem('koruz_token')) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const runMiniAppLogin = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const initData = getWebApp()?.initData?.trim() ?? '';
+        if (!initData) {
+          setMiniAppFallback(true);
+          return;
+        }
+        const response = await api.post<LoginResponse>('/auth/telegram-webapp', {
+          initData,
+        });
+        if (cancelled) {
+          return;
+        }
+        login(response.data.token, response.data.user);
+        history.replace(getRedirectPath(response.data.user.role));
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Telegram login failed');
+          setMiniAppFallback(true);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void runMiniAppLogin();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isMiniApp, miniAppFallback, history, login]);
 
   const handleLogin = async () => {
     if (!username.trim() || !password.trim()) {
@@ -89,9 +141,14 @@ export function AuthPage() {
     }
   };
 
+  const miniAppBootLoading = isMiniApp && !miniAppFallback && loading;
+
   return (
     <IonPage>
+      <IonLoading isOpen={miniAppBootLoading} message={t('common.loading')} />
       <IonContent className="ion-padding">
+        {!miniAppBootLoading && (
+        <>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 48 }}>
           <div style={{
             width: 80, height: 80, borderRadius: '50%',
@@ -184,6 +241,8 @@ export function AuthPage() {
         </div>
 
         <IonToast isOpen={!!error} message={error} duration={3000} color="danger" onDidDismiss={() => setError('')} />
+        </>
+        )}
       </IonContent>
     </IonPage>
   );

@@ -1,6 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginDto } from '../../libs/dto/auth.dto';
+import { LoginDto, TelegramWebAppLoginDto } from '../../libs/dto/auth.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -9,6 +9,12 @@ export class AuthController {
   @Post('telegram')
   async telegramLogin(@Body() payload: Record<string, unknown>) {
     const result = await this.authService.loginWithTelegram(payload);
+    return { data: result };
+  }
+
+  @Post('telegram-webapp')
+  async telegramWebApp(@Body() dto: TelegramWebAppLoginDto) {
+    const result = await this.authService.loginWithTelegramWebApp(dto.initData);
     return { data: result };
   }
 

@@ -2,6 +2,8 @@ import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { createHash, createHmac, timingSafeEqual } from 'crypto';
+import { verifyTelegramWebAppInitData } from '../../libs/telegram-webapp-init.util';
+import type { UserDocument } from '../../schemas/documents';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
@@ -18,21 +20,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid username or password');
     }
 
-    const token = await this.jwtService.signAsync({
-      sub: String(user._id),
-      role: user.role,
-    });
-
-    return {
-      token,
-      user: {
-        id: String(user._id),
-        role: user.role,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        username: user.username,
-      },
-    };
+    return this.buildAuthResponse(user);
   }
 
   async loginWithTelegram(payload: Record<string, unknown>) {
@@ -54,21 +42,43 @@ export class AuthService {
       throw new UnauthorizedException('Unable to authenticate user');
     }
 
-    const token = await this.jwtService.signAsync({
-      sub: String(user._id),
-      role: user.role,
+    return this.buildAuthResponse(user);
+  }
+
+  /**
+   * Authenticates a user from Telegram Mini App `initData` (WebApp), distinct
+   * from the Login Widget hash algorithm.
+   *
+   * Args:
+   *   initData (string): Raw `WebApp.initData` query string from the client.
+   *
+   * Returns:
+   *   object: JWT and public user shape, same as other auth methods.
+   */
+  async loginWithTelegramWebApp(initData: string) {
+    const botToken = this.configService.get<string>('TELEGRAM_BOT_TOKEN');
+    if (!botToken) {
+      throw new BadRequestException('TELEGRAM_BOT_TOKEN is not configured');
+    }
+
+    const verified = verifyTelegramWebAppInitData(initData, botToken);
+    if (!verified.ok) {
+      throw new UnauthorizedException(verified.reason);
+    }
+
+    const tg = verified.user;
+    const user = await this.usersService.upsertFromTelegram({
+      telegramId: tg.id,
+      firstName: tg.first_name,
+      lastName: tg.last_name,
+      username: tg.username,
     });
 
-    return {
-      token,
-      user: {
-        id: String(user._id),
-        role: user.role,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        username: user.username,
-      },
-    };
+    if (!user) {
+      throw new UnauthorizedException('Unable to authenticate user');
+    }
+
+    return this.buildAuthResponse(user);
   }
 
   private verifyTelegramSignature(payload: Record<string, unknown>): void {
@@ -125,5 +135,23 @@ export class AuthService {
       return undefined;
     }
     return String(value);
+  }
+
+  private async buildAuthResponse(user: UserDocument) {
+    const token = await this.jwtService.signAsync({
+      sub: String(user._id),
+      role: user.role,
+    });
+
+    return {
+      token,
+      user: {
+        id: String(user._id),
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        username: user.username,
+      },
+    };
   }
 }

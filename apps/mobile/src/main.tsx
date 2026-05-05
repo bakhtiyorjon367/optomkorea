@@ -23,6 +23,9 @@ import App from './App.tsx';
 import { AuthProvider } from './context/auth-context';
 import { LangProvider } from './context/lang-context';
 import './i18n/i18n';
+import { initWebApp } from './lib/telegram-webapp';
+
+initWebApp();
 
 setupIonicReact({
   mode: 'ios',
