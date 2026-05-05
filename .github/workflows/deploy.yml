@@ -29,6 +29,16 @@ jobs:
       - name: Build NestJS API
         run: pnpm --filter @koruz/api build
 
+      # Reason: apps/mobile/.env is gitignored, so Vite would otherwise inline
+      # an empty VITE_TELEGRAM_BOT_NAME and tree-shake the Telegram login button
+      # out of the bundle entirely.
+      - name: Write mobile .env (Vite build-time vars)
+        run: |
+          cat > apps/mobile/.env << 'ENVEOF'
+          VITE_API_URL=/api
+          VITE_TELEGRAM_BOT_NAME=optomkorean_bot
+          ENVEOF
+
       - name: Build React frontend
         run: pnpm --filter @koruz/mobile build
 
