@@ -98,11 +98,11 @@ jobs:
           cd /home/ubuntu/optomkorea
 
           # Install ONLY api production dependencies (no devDeps, no mobile)
-          pnpm install --filter @koruz/api... --prod --no-frozen-lockfile
+          CI=true pnpm install --filter @koruz/api... --frozen-lockfile
 
           # PM2: restart if running, start fresh if not
           if pm2 list | grep -q "optomkorea"; then
-            pm2 restart optomkorea
+            pm2 restart optomkorea --update-env
           else
             pm2 start /home/ubuntu/optomkorea/apps/api/dist/main.js \
               --name "optomkorea" \
