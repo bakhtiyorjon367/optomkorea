@@ -22,7 +22,7 @@ export function ProtectedRoute({ role, ...routeProps }: ProtectedRouteProps) {
   }
 
   if (role && user.role !== role && user.role !== 'admin') {
-    return <Redirect to="/products" />;
+    return <Redirect to="/home" />;
   }
 
   return <Route {...routeProps} />;

@@ -157,7 +157,19 @@
     "updateError": "Профилни янгилашда хатолик",
     "logout": "Чиқиш",
     "logoutConfirm": "Тизимдан чиқмоқчимисиз?",
-    "memberSince": "Аъзо бўлган сана"
+    "memberSince": "Аъзо бўлган сана",
+    "language": "Язык",
+    "theme": "Тема",
+    "themeLight": "Светлая",
+    "themeDark": "Тёмная"
+  },
+  "cart": {
+    "maintenanceTitle": "На обслуживании",
+    "maintenanceSubtitle": "Мы работаем над системой заказов. Загляните позже!"
+  },
+  "search": {
+    "recent": "Недавние запросы",
+    "placeholder": "Поиск товаров"
   },
   "shipments": {
     "title": "Жўнатмалар",
@@ -196,6 +208,11 @@
   },
   "tabs": {
     "products": "Маҳсулотлар",
+    "home": "Главная",
+    "category": "Категории",
+    "search": "Поиск",
+    "profile": "Профиль",
+    "cart": "Корзина",
     "checkin": "Қабул",
     "sales": "Сотувлар",
     "inventory": "Инвентар",

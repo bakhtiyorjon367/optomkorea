@@ -36,7 +36,7 @@ function getRedirectPath(role: string): string {
     case 'manager':
       return '/manager/checkin';
     default:
-      return '/products';
+      return '/home';
   }
 }
 
@@ -235,7 +235,7 @@ export function AuthPage() {
         )}
 
         <div style={{ marginTop: 24 }}>
-          <IonButton fill="clear" expand="block" routerLink="/products" style={{ maxWidth: 400, margin: '0 auto' }}>
+          <IonButton fill="clear" expand="block" routerLink="/home" style={{ maxWidth: 400, margin: '0 auto' }}>
             {t('common.back')}
           </IonButton>
         </div>

@@ -24,7 +24,9 @@ import { AuthProvider } from './context/auth-context';
 import { LangProvider } from './context/lang-context';
 import './i18n/i18n';
 import { initWebApp } from './lib/telegram-webapp';
+import { bootstrapTheme } from './lib/theme-bootstrap';
 
+bootstrapTheme();
 initWebApp();
 
 setupIonicReact({

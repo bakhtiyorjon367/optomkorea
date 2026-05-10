@@ -135,7 +135,7 @@
     "users": "Foydalanuvchilar",
     "credits": "Nasiyalar",
     "promoteUser": "Rolni o'zgartirish",
-    "manageProducts": "Mahsulotlarni boshqarish",
+    "manageProducts": "Boshqarish",
     "deleteProductTitle": "Mahsulotni o'chirish",
     "deleteProductMessage": "\"{{name}}\" ni o'chirishni tasdiqlaysizmi? Bu faqat jo'natmalar, ombor, sotuvlar, qabulnomalar yoki o'tkazmalar bo'lmasa amalga oshadi.",
     "deleteProductBlocked": "Bu mahsulotda tarix yoki zaxira bor — avval bog'liq yozuvlarni hal qiling yoki mahsulotni o'chirish mumkin emas.",
@@ -157,7 +157,19 @@
     "updateError": "Profilni yangilashda xatolik",
     "logout": "Chiqish",
     "logoutConfirm": "Tizimdan chiqmoqchimisiz?",
-    "memberSince": "A'zo bo'lgan sana"
+    "memberSince": "A'zo bo'lgan sana",
+    "language": "Til",
+    "theme": "Mavzu",
+    "themeLight": "Yorug'",
+    "themeDark": "Qorong'u"
+  },
+  "cart": {
+    "maintenanceTitle": "Ta'mirlashda",
+    "maintenanceSubtitle": "Buyurtma tizimi ustida ishlayapmiz. Tez orada qaytib ko'ring!"
+  },
+  "search": {
+    "recent": "So'nggi qidiruvlar",
+    "placeholder": "Mahsulot qidirish"
   },
   "shipments": {
     "title": "Jo'natmalar",
@@ -196,6 +208,11 @@
   },
   "tabs": {
     "products": "Mahsulotlar",
+    "home": "Asosiy",
+    "category": "Kategoriya",
+    "search": "Qidiruv",
+    "profile": "Profil",
+    "cart": "Savatcha",
     "checkin": "Qabul",
     "sales": "Sotuvlar",
     "inventory": "Inventar",

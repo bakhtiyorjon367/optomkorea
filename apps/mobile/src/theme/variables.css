@@ -63,3 +63,23 @@
   --ion-safe-area-left: env(safe-area-inset-left);
   --ion-safe-area-right: env(safe-area-inset-right);
 }
+
+[data-theme='dark'] {
+  --bg-primary: #1c2733;
+  --bg-secondary: #232e3c;
+  --bg-tertiary: #2b3a4a;
+  --text-primary: #ffffff;
+  --text-secondary: #8899a6;
+  --border-color: #2b3a4a;
+
+  --ion-background-color: var(--bg-primary);
+  --ion-background-color-rgb: 28, 39, 51;
+  --ion-text-color: var(--text-primary);
+  --ion-text-color-rgb: 255, 255, 255;
+  --ion-card-background: var(--bg-secondary);
+  --ion-toolbar-background: var(--bg-secondary);
+  --ion-tab-bar-background: var(--bg-secondary);
+  --ion-item-background: var(--bg-secondary);
+  --ion-border-color: var(--border-color);
+  --ion-color-step-50: #1f2a36;
+}

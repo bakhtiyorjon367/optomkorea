@@ -10,6 +10,8 @@ import {
   IonList,
   IonListHeader,
   IonPage,
+  IonSegment,
+  IonSegmentButton,
   IonSkeletonText,
   IonText,
   IonToast,
@@ -23,7 +25,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { IUser, IApiResponse } from '@koruz/types';
 import { AppHeader } from '../../components/shared/app-header';
 import { useAuth } from '../../hooks/use-auth';
+import { useLang } from '../../hooks/use-lang';
 import { api } from '../../lib/api';
+import {
+  getResolvedTheme,
+  persistAndApplyTheme,
+  type ThemePreference,
+} from '../../lib/theme-bootstrap';
 
 const ROLE_COLORS: Record<string, string> = {
   admin: 'danger',
@@ -39,9 +47,20 @@ const ROLE_COLORS: Record<string, string> = {
 export function ProfilePage() {
   const { t, i18n } = useTranslation();
   const { user: authUser, logout, login, token } = useAuth();
+  const { locale, setLocale } = useLang();
   const router = useIonRouter();
   const queryClient = useQueryClient();
   const [presentAlert] = useIonAlert();
+
+  const [themePref, setThemePref] = useState<ThemePreference>(() => {
+    if (typeof document !== 'undefined') {
+      const attr = document.documentElement.getAttribute('data-theme');
+      if (attr === 'dark' || attr === 'light') {
+        return attr;
+      }
+    }
+    return getResolvedTheme();
+  });
 
   const [editing, setEditing] = useState(false);
   const [firstName, setFirstName] = useState('');
@@ -109,7 +128,7 @@ export function ProfilePage() {
           handler: () => {
             logout();
             queryClient.clear();
-            router.push('/products', 'root', 'replace');
+            router.push('/home', 'root', 'replace');
           },
         },
       ],
@@ -139,6 +158,45 @@ export function ProfilePage() {
       <IonPage>
         <AppHeader title={t('profile.title')} />
         <IonContent className="ion-padding ion-text-center">
+          <div className="ion-text-start ion-margin-bottom">
+            <IonLabel style={{ display: 'block', marginBottom: 8, fontWeight: 600 }}>
+              {t('profile.language')}
+            </IonLabel>
+            <IonSegment
+              value={locale}
+              onIonChange={(e) => {
+                const v = e.detail.value;
+                if (v === 'uz' || v === 'ru') setLocale(v);
+              }}
+            >
+              <IonSegmentButton value="uz">
+                <IonLabel>UZ</IonLabel>
+              </IonSegmentButton>
+              <IonSegmentButton value="ru">
+                <IonLabel>RU</IonLabel>
+              </IonSegmentButton>
+            </IonSegment>
+            <IonLabel style={{ display: 'block', margin: '16px 0 8px', fontWeight: 600 }}>
+              {t('profile.theme')}
+            </IonLabel>
+            <IonSegment
+              value={themePref}
+              onIonChange={(e) => {
+                const v = e.detail.value as ThemePreference;
+                if (v === 'dark' || v === 'light') {
+                  setThemePref(v);
+                  persistAndApplyTheme(v);
+                }
+              }}
+            >
+              <IonSegmentButton value="light">
+                <IonLabel>{t('profile.themeLight')}</IonLabel>
+              </IonSegmentButton>
+              <IonSegmentButton value="dark">
+                <IonLabel>{t('profile.themeDark')}</IonLabel>
+              </IonSegmentButton>
+            </IonSegment>
+          </div>
           <IonText color="medium">
             <p>{t('auth.notAuthorized')}</p>
           </IonText>
@@ -195,6 +253,46 @@ export function ProfilePage() {
               <IonBadge color={ROLE_COLORS[profile.role] ?? 'medium'} style={{ marginTop: 8 }}>
                 {getRoleLabel(profile.role)}
               </IonBadge>
+            </div>
+
+            <div className="ion-padding-horizontal" style={{ paddingBottom: 8 }}>
+              <IonLabel style={{ display: 'block', marginBottom: 8, fontWeight: 600 }}>
+                {t('profile.language')}
+              </IonLabel>
+              <IonSegment
+                value={locale}
+                onIonChange={(e) => {
+                  const v = e.detail.value;
+                  if (v === 'uz' || v === 'ru') setLocale(v);
+                }}
+              >
+                <IonSegmentButton value="uz">
+                  <IonLabel>UZ</IonLabel>
+                </IonSegmentButton>
+                <IonSegmentButton value="ru">
+                  <IonLabel>RU</IonLabel>
+                </IonSegmentButton>
+              </IonSegment>
+              <IonLabel style={{ display: 'block', margin: '16px 0 8px', fontWeight: 600 }}>
+                {t('profile.theme')}
+              </IonLabel>
+              <IonSegment
+                value={themePref}
+                onIonChange={(e) => {
+                  const v = e.detail.value as ThemePreference;
+                  if (v === 'dark' || v === 'light') {
+                    setThemePref(v);
+                    persistAndApplyTheme(v);
+                  }
+                }}
+              >
+                <IonSegmentButton value="light">
+                  <IonLabel>{t('profile.themeLight')}</IonLabel>
+                </IonSegmentButton>
+                <IonSegmentButton value="dark">
+                  <IonLabel>{t('profile.themeDark')}</IonLabel>
+                </IonSegmentButton>
+              </IonSegment>
             </div>
 
             <IonList inset>

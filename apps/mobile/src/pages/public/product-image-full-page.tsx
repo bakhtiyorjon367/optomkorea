@@ -50,7 +50,7 @@ export function ProductImageFullPage() {
       <IonHeader className="ion-no-border">
         <IonToolbar style={{ '--background': 'rgba(0,0,0,0.65)', '--color': '#fff' }}>
           <IonButtons slot="start">
-            <IonBackButton defaultHref={productId ? `/products/${productId}` : '/products'} text={t('common.back')} color="light" />
+            <IonBackButton defaultHref={productId ? `/products/${productId}` : '/home'} text={t('common.back')} color="light" />
           </IonButtons>
           {images.length > 1 && (
             <IonTitle style={{ color: '#fff', fontSize: 15 }}>

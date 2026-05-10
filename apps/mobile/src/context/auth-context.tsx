@@ -1,6 +1,6 @@
 import type { IAuthUser } from '@koruz/types';
 import type { ReactNode } from 'react';
-import { createContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useMemo, useState } from 'react';
 
 type AuthContextValue = {
   user: IAuthUser | null;
@@ -24,26 +24,39 @@ type AuthProviderProps = {
   children: ReactNode;
 };
 
+type StoredAuth = { token: string | null; user: IAuthUser | null };
+
+/**
+ * Reads persisted auth from localStorage synchronously so the very first
+ * render already has the correct role. This avoids a transient render with
+ * `user = null` followed by the real role, which causes Ionic's IonTabBar
+ * to register the guest tabs and the role-specific tabs on different render
+ * cycles — leading to colliding/stacked tab buttons after a hard reload.
+ *
+ * Returns:
+ *   StoredAuth: token+user from storage, or { null, null } if missing/corrupt.
+ */
+function readPersistedAuth(): StoredAuth {
+  if (typeof localStorage === 'undefined') {
+    return { token: null, user: null };
+  }
+  const storedToken = localStorage.getItem('koruz_token');
+  const storedUser = localStorage.getItem('koruz_user');
+  if (!storedToken || !storedUser) {
+    return { token: null, user: null };
+  }
+  try {
+    const parsedUser = JSON.parse(storedUser) as IAuthUser;
+    return { token: storedToken, user: parsedUser };
+  } catch {
+    localStorage.removeItem('koruz_token');
+    localStorage.removeItem('koruz_user');
+    return { token: null, user: null };
+  }
+}
+
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<IAuthUser | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-
-  useEffect(() => {
-    const storedToken = localStorage.getItem('koruz_token');
-    const storedUser = localStorage.getItem('koruz_user');
-    if (!storedToken || !storedUser) {
-      return;
-    }
-
-    try {
-      const parsedUser = JSON.parse(storedUser) as IAuthUser;
-      setToken(storedToken);
-      setUser(parsedUser);
-    } catch {
-      localStorage.removeItem('koruz_token');
-      localStorage.removeItem('koruz_user');
-    }
-  }, []);
+  const [{ user, token }, setAuthState] = useState<StoredAuth>(readPersistedAuth);
 
   /**
    * Persists auth session and updates in-memory context.
@@ -58,8 +71,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = (nextToken: string, nextUser: IAuthUser): void => {
     localStorage.setItem('koruz_token', nextToken);
     localStorage.setItem('koruz_user', JSON.stringify(nextUser));
-    setToken(nextToken);
-    setUser(nextUser);
+    setAuthState({ token: nextToken, user: nextUser });
   };
 
   /**
@@ -71,8 +83,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = (): void => {
     localStorage.removeItem('koruz_token');
     localStorage.removeItem('koruz_user');
-    setToken(null);
-    setUser(null);
+    setAuthState({ token: null, user: null });
   };
 
   const value = useMemo<AuthContextValue>(

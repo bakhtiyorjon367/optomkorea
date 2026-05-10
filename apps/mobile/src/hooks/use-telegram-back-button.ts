@@ -6,7 +6,11 @@ import { getWebApp, isInsideTelegramMiniApp } from '../lib/telegram-webapp';
  * Tab-root paths: Telegram hardware back should hide here (same as bottom tab home).
  */
 const TAB_ROOT_PATHS = new Set([
+  '/home',
   '/products',
+  '/category',
+  '/search',
+  '/cart',
   '/auth',
   '/profile',
   '/manager/checkin',

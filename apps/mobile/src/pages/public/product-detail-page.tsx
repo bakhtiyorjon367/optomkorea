@@ -85,7 +85,7 @@ export function ProductDetailPage() {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/products" text={t('common.back')} />
+            <IonBackButton defaultHref="/home" text={t('common.back')} />
           </IonButtons>
           {isAdmin && product && (
             <IonButtons slot="end">
@@ -180,24 +180,17 @@ export function ProductDetailPage() {
               </div>
 
               {!!product.description && (
-                <IonText color="dark">
-                  <p style={{ fontSize: 14, lineHeight: 1.6 }}>{product.description as string}</p>
-                </IonText>
+                <p className="product-detail-description">{product.description as string}</p>
               )}
 
-              <div style={{
-                background: 'var(--ion-color-light)', borderRadius: 12, padding: 16, marginTop: 16,
-              }}>
+              <div style={{ marginTop: 16 }}>
                 {isAdmin && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                     <IonText color="medium" style={{ fontSize: 13 }}>{t('products.costKrw')}</IonText>
                     <IonText style={{ fontSize: 13, fontWeight: 600 }}>₩{(product.costKrw as number)?.toLocaleString()}</IonText>
                   </div>
                 )}
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <IonText color="medium" style={{ fontSize: 13 }}>{t('products.price')}</IonText>
-                  <IonText style={{ fontSize: 13, fontWeight: 600 }}>{formatUZS(product.sellingPrice as number)}</IonText>
-                </div>
+             
               </div>
 
               {isAdmin && (

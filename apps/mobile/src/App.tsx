@@ -1,31 +1,17 @@
-import {
-  IonApp,
-  IonIcon,
-  IonLabel,
-  IonRouterOutlet,
-  IonTabBar,
-  IonTabButton,
-  IonTabs,
-} from '@ionic/react';
+import { IonApp, IonRouterOutlet, IonTabs } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { Redirect, Route } from 'react-router-dom';
-import {
-  bagHandleOutline,
-  cartOutline,
-  cashOutline,
-  checkboxOutline,
-  cubeOutline,
-  peopleOutline,
-} from 'ionicons/icons';
-import { useTranslation } from 'react-i18next';
+import { BottomNav } from './components/shared/bottom-nav';
 import { ProtectedRoute } from './components/protected-route';
-import { useAuth } from './hooks/use-auth';
 import { useTelegramBackButton } from './hooks/use-telegram-back-button';
 import { isInsideTelegramMiniApp } from './lib/telegram-webapp';
 
 import { AuthPage } from './pages/auth/auth-page';
 import { ProfilePage } from './pages/profile/profile-page';
-import { ProductListPage } from './pages/public/product-list-page';
+import { HomePage } from './pages/public/home-page';
+import { CategoryPage } from './pages/public/category-page';
+import { SearchPage } from './pages/public/search-page';
+import { CartPage } from './pages/public/cart-page';
 import { ProductDetailPage } from './pages/public/product-detail-page';
 import { ProductImageFullPage } from './pages/public/product-image-full-page';
 import { CheckinPage } from './pages/manager/checkin-page';
@@ -38,7 +24,7 @@ import { AdminUsersPage } from './pages/admin/admin-users-page';
 
 /**
  * Root path: Telegram Mini App without a session should hit /auth so initData
- * auto-login runs; browsers and returning sessions go to the catalog.
+ * auto-login runs; browsers and returning sessions go to the catalog home.
  */
 function RootRedirect() {
   const hasToken =
@@ -47,7 +33,7 @@ function RootRedirect() {
   if (isInsideTelegramMiniApp() && !hasToken) {
     return <Redirect to="/auth" />;
   }
-  return <Redirect to="/products" />;
+  return <Redirect to="/home" />;
 }
 
 /**
@@ -56,15 +42,16 @@ function RootRedirect() {
  */
 function AppTabs() {
   useTelegramBackButton();
-  const { t } = useTranslation();
-  const { user } = useAuth();
-  const role = user?.role;
 
   return (
     <IonTabs>
       <IonRouterOutlet>
-        {/* Public routes */}
-        <Route exact path="/products" component={ProductListPage} />
+        {/* Public catalog */}
+        <Route exact path="/home" component={HomePage} />
+        <Route exact path="/products" component={HomePage} />
+        <Route exact path="/category" component={CategoryPage} />
+        <Route exact path="/search" component={SearchPage} />
+        <Route exact path="/cart" component={CartPage} />
         <Route exact path="/products/:productId/image/:imageIndex" component={ProductImageFullPage} />
         <Route exact path="/products/:id" component={ProductDetailPage} />
 
@@ -92,62 +79,16 @@ function AppTabs() {
         <Route exact path="/" component={RootRedirect} />
       </IonRouterOutlet>
 
-      <IonTabBar slot="bottom">
-        {/* Always visible */}
-        <IonTabButton tab="products" href="/products">
-          <IonIcon icon={bagHandleOutline} />
-          <IonLabel>{t('tabs.products')}</IonLabel>
-        </IonTabButton>
-
-        {/* Manager tabs */}
-        {role === 'manager' && (
-          <IonTabButton tab="checkin" href="/manager/checkin">
-            <IonIcon icon={checkboxOutline} />
-            <IonLabel>{t('tabs.checkin')}</IonLabel>
-          </IonTabButton>
-        )}
-        {role === 'manager' && (
-          <IonTabButton tab="sales" href="/manager/sales">
-            <IonIcon icon={cartOutline} />
-            <IonLabel>{t('tabs.sales')}</IonLabel>
-          </IonTabButton>
-        )}
-
-        {/* Admin tabs */}
-        {role === 'admin' && (
-          <IonTabButton tab="admin-products" href="/admin/products">
-            <IonIcon icon={cubeOutline} />
-            <IonLabel>{t('admin.products')}</IonLabel>
-          </IonTabButton>
-        )}
-        {role === 'admin' && (
-          <IonTabButton tab="inventory" href="/admin/inventory">
-            <IonIcon icon={checkboxOutline} />
-            <IonLabel>{t('tabs.inventory')}</IonLabel>
-          </IonTabButton>
-        )}
-        {role === 'admin' && (
-          <IonTabButton tab="finance" href="/admin/finance">
-            <IonIcon icon={cashOutline} />
-            <IonLabel>{t('tabs.finance')}</IonLabel>
-          </IonTabButton>
-        )}
-        {role === 'admin' && (
-          <IonTabButton tab="users" href="/admin/users">
-            <IonIcon icon={peopleOutline} />
-            <IonLabel>{t('tabs.users')}</IonLabel>
-          </IonTabButton>
-        )}
-      </IonTabBar>
+      <BottomNav />
     </IonTabs>
   );
 }
 
 /**
  * Root application component. Renders role-based tab navigation:
- * - Public: Products tab (visible to everyone)
- * - Manager: Check-in + Sales tabs
- * - Admin: Products management + Inventory + Finance + Users tabs
+ * - Public: Home, Category, Search, Profile, Cart (guest / shoppers)
+ * - Manager: Check-in + Sales + catalog tabs + Profile
+ * - Admin: Admin stack + catalog tabs + Profile
  */
 function App() {
   return (
