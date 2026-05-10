@@ -10,15 +10,22 @@ import {
   IonList,
   IonListHeader,
   IonPage,
-  IonSegment,
-  IonSegmentButton,
   IonSkeletonText,
   IonText,
   IonToast,
+  IonToggle,
   useIonAlert,
   useIonRouter,
 } from '@ionic/react';
-import { logOutOutline, createOutline, checkmarkOutline, closeOutline } from 'ionicons/icons';
+import {
+  checkmarkOutline,
+  closeOutline,
+  createOutline,
+  languageOutline,
+  logOutOutline,
+  moonOutline,
+  sunnyOutline,
+} from 'ionicons/icons';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -153,56 +160,68 @@ export function ProfilePage() {
     }).format(new Date(dateStr));
   };
 
+  /**
+   * Native inline toggle rows for language + theme. Off/on maps to the two
+   * options (uz/ru, light/dark). Used in both the signed-out and signed-in
+   * views so guests can configure preferences before logging in.
+   *
+   * Returns:
+   *   JSX.Element: <IonList inset> with two <IonToggle> rows.
+   */
+  const renderPreferencesList = () => (
+    <IonList inset>
+      <IonItem>
+        <IonIcon icon={languageOutline} slot="start" color="medium" aria-hidden="true" />
+        <IonLabel>
+          <h3>{t('profile.language')}</h3>
+          <p>{locale === 'ru' ? 'RU' : 'UZ'}</p>
+        </IonLabel>
+        <IonToggle
+          slot="end"
+          checked={locale === 'ru'}
+          onIonChange={(e) => setLocale(e.detail.checked ? 'ru' : 'uz')}
+          aria-label={t('profile.language')}
+        />
+      </IonItem>
+      <IonItem>
+        <IonIcon
+          icon={themePref === 'dark' ? moonOutline : sunnyOutline}
+          slot="start"
+          color="medium"
+          aria-hidden="true"
+        />
+        <IonLabel>
+          <h3>{t('profile.theme')}</h3>
+          <p>{themePref === 'dark' ? t('profile.themeDark') : t('profile.themeLight')}</p>
+        </IonLabel>
+        <IonToggle
+          slot="end"
+          checked={themePref === 'dark'}
+          onIonChange={(e) => {
+            const next: ThemePreference = e.detail.checked ? 'dark' : 'light';
+            setThemePref(next);
+            persistAndApplyTheme(next);
+          }}
+          aria-label={t('profile.theme')}
+        />
+      </IonItem>
+    </IonList>
+  );
+
   if (!authUser) {
     return (
       <IonPage>
         <AppHeader title={t('profile.title')} />
-        <IonContent className="ion-padding ion-text-center">
-          <div className="ion-text-start ion-margin-bottom">
-            <IonLabel style={{ display: 'block', marginBottom: 8, fontWeight: 600 }}>
-              {t('profile.language')}
-            </IonLabel>
-            <IonSegment
-              value={locale}
-              onIonChange={(e) => {
-                const v = e.detail.value;
-                if (v === 'uz' || v === 'ru') setLocale(v);
-              }}
-            >
-              <IonSegmentButton value="uz">
-                <IonLabel>UZ</IonLabel>
-              </IonSegmentButton>
-              <IonSegmentButton value="ru">
-                <IonLabel>RU</IonLabel>
-              </IonSegmentButton>
-            </IonSegment>
-            <IonLabel style={{ display: 'block', margin: '16px 0 8px', fontWeight: 600 }}>
-              {t('profile.theme')}
-            </IonLabel>
-            <IonSegment
-              value={themePref}
-              onIonChange={(e) => {
-                const v = e.detail.value as ThemePreference;
-                if (v === 'dark' || v === 'light') {
-                  setThemePref(v);
-                  persistAndApplyTheme(v);
-                }
-              }}
-            >
-              <IonSegmentButton value="light">
-                <IonLabel>{t('profile.themeLight')}</IonLabel>
-              </IonSegmentButton>
-              <IonSegmentButton value="dark">
-                <IonLabel>{t('profile.themeDark')}</IonLabel>
-              </IonSegmentButton>
-            </IonSegment>
+        <IonContent>
+          {renderPreferencesList()}
+          <div className="ion-padding ion-text-center">
+            <IonText color="medium">
+              <p>{t('auth.notAuthorized')}</p>
+            </IonText>
+            <IonButton routerLink="/auth" expand="block" className="ion-margin-top">
+              {t('auth.loginButton')}
+            </IonButton>
           </div>
-          <IonText color="medium">
-            <p>{t('auth.notAuthorized')}</p>
-          </IonText>
-          <IonButton routerLink="/auth" expand="block" className="ion-margin-top">
-            {t('auth.loginButton')}
-          </IonButton>
         </IonContent>
       </IonPage>
     );
@@ -255,45 +274,7 @@ export function ProfilePage() {
               </IonBadge>
             </div>
 
-            <div className="ion-padding-horizontal" style={{ paddingBottom: 8 }}>
-              <IonLabel style={{ display: 'block', marginBottom: 8, fontWeight: 600 }}>
-                {t('profile.language')}
-              </IonLabel>
-              <IonSegment
-                value={locale}
-                onIonChange={(e) => {
-                  const v = e.detail.value;
-                  if (v === 'uz' || v === 'ru') setLocale(v);
-                }}
-              >
-                <IonSegmentButton value="uz">
-                  <IonLabel>UZ</IonLabel>
-                </IonSegmentButton>
-                <IonSegmentButton value="ru">
-                  <IonLabel>RU</IonLabel>
-                </IonSegmentButton>
-              </IonSegment>
-              <IonLabel style={{ display: 'block', margin: '16px 0 8px', fontWeight: 600 }}>
-                {t('profile.theme')}
-              </IonLabel>
-              <IonSegment
-                value={themePref}
-                onIonChange={(e) => {
-                  const v = e.detail.value as ThemePreference;
-                  if (v === 'dark' || v === 'light') {
-                    setThemePref(v);
-                    persistAndApplyTheme(v);
-                  }
-                }}
-              >
-                <IonSegmentButton value="light">
-                  <IonLabel>{t('profile.themeLight')}</IonLabel>
-                </IonSegmentButton>
-                <IonSegmentButton value="dark">
-                  <IonLabel>{t('profile.themeDark')}</IonLabel>
-                </IonSegmentButton>
-              </IonSegment>
-            </div>
+            {renderPreferencesList()}
 
             <IonList inset>
               <IonListHeader>
