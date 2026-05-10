@@ -23,8 +23,6 @@ import {
   createOutline,
   languageOutline,
   logOutOutline,
-  moonOutline,
-  sunnyOutline,
 } from 'ionicons/icons';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -34,11 +32,6 @@ import { AppHeader } from '../../components/shared/app-header';
 import { useAuth } from '../../hooks/use-auth';
 import { useLang } from '../../hooks/use-lang';
 import { api } from '../../lib/api';
-import {
-  getResolvedTheme,
-  persistAndApplyTheme,
-  type ThemePreference,
-} from '../../lib/theme-bootstrap';
 
 const ROLE_COLORS: Record<string, string> = {
   admin: 'danger',
@@ -58,16 +51,6 @@ export function ProfilePage() {
   const router = useIonRouter();
   const queryClient = useQueryClient();
   const [presentAlert] = useIonAlert();
-
-  const [themePref, setThemePref] = useState<ThemePreference>(() => {
-    if (typeof document !== 'undefined') {
-      const attr = document.documentElement.getAttribute('data-theme');
-      if (attr === 'dark' || attr === 'light') {
-        return attr;
-      }
-    }
-    return getResolvedTheme();
-  });
 
   const [editing, setEditing] = useState(false);
   const [firstName, setFirstName] = useState('');
@@ -161,12 +144,11 @@ export function ProfilePage() {
   };
 
   /**
-   * Native inline toggle rows for language + theme. Off/on maps to the two
-   * options (uz/ru, light/dark). Used in both the signed-out and signed-in
-   * views so guests can configure preferences before logging in.
+   * Language toggle row. Used in both signed-out and signed-in views so guests
+   * can pick locale before logging in.
    *
    * Returns:
-   *   JSX.Element: <IonList inset> with two <IonToggle> rows.
+   *   JSX.Element: <IonList inset> with language <IonToggle> row.
    */
   const renderPreferencesList = () => (
     <IonList inset>
@@ -181,28 +163,6 @@ export function ProfilePage() {
           checked={locale === 'ru'}
           onIonChange={(e) => setLocale(e.detail.checked ? 'ru' : 'uz')}
           aria-label={t('profile.language')}
-        />
-      </IonItem>
-      <IonItem>
-        <IonIcon
-          icon={themePref === 'dark' ? moonOutline : sunnyOutline}
-          slot="start"
-          color="medium"
-          aria-hidden="true"
-        />
-        <IonLabel>
-          <h3>{t('profile.theme')}</h3>
-          <p>{themePref === 'dark' ? t('profile.themeDark') : t('profile.themeLight')}</p>
-        </IonLabel>
-        <IonToggle
-          slot="end"
-          checked={themePref === 'dark'}
-          onIonChange={(e) => {
-            const next: ThemePreference = e.detail.checked ? 'dark' : 'light';
-            setThemePref(next);
-            persistAndApplyTheme(next);
-          }}
-          aria-label={t('profile.theme')}
         />
       </IonItem>
     </IonList>

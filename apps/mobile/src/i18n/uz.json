@@ -157,10 +157,7 @@
     "logout": "Chiqish",
     "logoutConfirm": "Tizimdan chiqmoqchimisiz?",
     "memberSince": "A'zo bo'lgan sana",
-    "language": "Til",
-    "theme": "Mavzu",
-    "themeLight": "Yorug'",
-    "themeDark": "Qorong'u"
+    "language": "Til"
   },
   "cart": {
     "maintenanceTitle": "Ta'mirlashda",

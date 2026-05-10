@@ -157,10 +157,7 @@
     "logout": "Чиқиш",
     "logoutConfirm": "Тизимдан чиқмоқчимисиз?",
     "memberSince": "Аъзо бўлган сана",
-    "language": "Язык",
-    "theme": "Тема",
-    "themeLight": "Светлая",
-    "themeDark": "Тёмная"
+    "language": "Язык"
   },
   "cart": {
     "maintenanceTitle": "На обслуживании",

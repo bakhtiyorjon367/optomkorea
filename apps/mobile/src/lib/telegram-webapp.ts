@@ -25,10 +25,13 @@ export type TelegramWebApp = {
   initDataUnsafe: Record<string, unknown>;
   ready: () => void;
   expand: () => void;
+  colorScheme: 'light' | 'dark';
   disableVerticalSwipes?: () => void;
   enableClosingConfirmation?: () => void;
   themeParams: TelegramThemeParams;
   BackButton: TelegramBackButton;
+  onEvent?: (eventType: string, callback: () => void) => void;
+  offEvent?: (eventType: string, callback: () => void) => void;
 };
 
 declare global {
@@ -59,28 +62,9 @@ export function isInsideTelegramMiniApp(): boolean {
 }
 
 /**
- * Applies theme colors from Telegram to Ionic CSS variables for a native feel.
- *
- * Args:
- *   webApp (TelegramWebApp): Telegram WebApp instance.
- */
-function applyThemeParams(webApp: TelegramWebApp): void {
-  const tp = webApp.themeParams;
-  const root = document.documentElement;
-  if (tp.bg_color) {
-    root.style.setProperty('--ion-background-color', tp.bg_color);
-  }
-  if (tp.text_color) {
-    root.style.setProperty('--ion-text-color', tp.text_color);
-  }
-  if (tp.secondary_bg_color) {
-    root.style.setProperty('--ion-color-step-50', tp.secondary_bg_color);
-  }
-}
-
-/**
  * Initializes Telegram WebApp: signals readiness, expands the sheet, reduces
- * accidental swipe-to-close, and applies theme params.
+ * accidental swipe-to-close. Theme is owned by `bootstrapTheme()` in
+ * `theme-bootstrap.ts` (colorScheme + themeParams + `themeChanged`).
  *
  * Reason: Call once at app bootstrap before React mounts so the webview chrome
  * matches native Telegram apps like @BotFather.
@@ -102,6 +86,4 @@ export function initWebApp(): void {
   if (typeof webApp.enableClosingConfirmation === 'function') {
     webApp.enableClosingConfirmation();
   }
-
-  applyThemeParams(webApp);
 }

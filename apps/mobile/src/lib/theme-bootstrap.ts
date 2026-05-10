@@ -1,62 +1,99 @@
-export const THEME_STORAGE_KEY = 'themePreference';
-
-export type ThemePreference = 'dark' | 'light';
-
-/**
- * Resolves active theme from manual storage or system preference.
- *
- * Returns:
- *   ThemePreference: 'dark' or 'light'.
- */
-export function getResolvedTheme(): ThemePreference {
-  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-    return 'light';
-  }
-  const stored = localStorage.getItem(THEME_STORAGE_KEY);
-  if (stored === 'dark' || stored === 'light') {
-    return stored;
-  }
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
+import type { TelegramThemeParams } from './telegram-webapp';
+import { getWebApp, isInsideTelegramMiniApp } from './telegram-webapp';
 
 /**
- * Applies theme to the document root via data-theme attribute.
+ * Writes Telegram Mini App theme tokens onto the document root so Ionic
+ * components inherit native host colors.
  *
  * Args:
- *   theme (ThemePreference): Theme to apply.
+ *   tp (TelegramThemeParams): Colors from `Telegram.WebApp.themeParams`.
  *
  * Returns:
  *   void
  */
-export function applyDocumentTheme(theme: ThemePreference): void {
+export function applyTelegramTheme(tp: TelegramThemeParams): void {
   if (typeof document === 'undefined') {
     return;
   }
-  document.documentElement.setAttribute('data-theme', theme);
+  const root = document.documentElement;
+  if (tp.bg_color) {
+    root.style.setProperty('--ion-background-color', tp.bg_color);
+  }
+  if (tp.text_color) {
+    root.style.setProperty('--ion-text-color', tp.text_color);
+  }
+  if (tp.hint_color) {
+    root.style.setProperty('--ion-color-medium', tp.hint_color);
+  }
+  if (tp.link_color) {
+    root.style.setProperty('--ion-color-primary', tp.link_color);
+  }
+  if (tp.button_color) {
+    root.style.setProperty('--ion-color-primary-shade', tp.button_color);
+  }
+  if (tp.button_text_color) {
+    root.style.setProperty('--ion-color-primary-contrast', tp.button_text_color);
+  }
+  if (tp.secondary_bg_color) {
+    root.style.setProperty('--ion-color-step-50', tp.secondary_bg_color);
+    root.style.setProperty('--ion-card-background', tp.secondary_bg_color);
+    root.style.setProperty('--ion-toolbar-background', tp.secondary_bg_color);
+    root.style.setProperty('--ion-tab-bar-background', tp.secondary_bg_color);
+    root.style.setProperty('--ion-item-background', tp.secondary_bg_color);
+  }
 }
 
 /**
- * Persists user theme choice and applies it to the document.
+ * Sets `data-theme` on the root element for palette selectors in CSS.
  *
  * Args:
- *   theme (ThemePreference): Theme to persist.
+ *   scheme ('dark' | 'light'): Telegram color scheme or browser-derived scheme.
  *
  * Returns:
  *   void
  */
-export function persistAndApplyTheme(theme: ThemePreference): void {
-  if (typeof localStorage !== 'undefined') {
-    localStorage.setItem(THEME_STORAGE_KEY, theme);
+function setDataTheme(scheme: 'dark' | 'light'): void {
+  if (typeof document === 'undefined') {
+    return;
   }
-  applyDocumentTheme(theme);
+  document.documentElement.setAttribute('data-theme', scheme);
 }
 
 /**
- * Sets initial data-theme before React paint (system or saved preference).
+ * Boots theme before React paint: Telegram Mini App uses SDK colorScheme +
+ * themeParams (with live `themeChanged` updates); browser uses
+ * `prefers-color-scheme` only (no localStorage, no in-app toggle).
  *
  * Returns:
  *   void
  */
 export function bootstrapTheme(): void {
-  applyDocumentTheme(getResolvedTheme());
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return;
+  }
+
+  const tg = getWebApp();
+  if (tg && isInsideTelegramMiniApp()) {
+    const syncFromTelegram = (): void => {
+      const scheme = tg.colorScheme === 'dark' ? 'dark' : 'light';
+      setDataTheme(scheme);
+      applyTelegramTheme(tg.themeParams);
+    };
+
+    syncFromTelegram();
+
+    // Reason: Telegram updates themeParams when the user switches app appearance;
+    // re-applying avoids stale inline --ion-* overrides on :root.
+    if (typeof tg.onEvent === 'function') {
+      tg.onEvent('themeChanged', syncFromTelegram);
+    }
+
+    return;
+  }
+
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  setDataTheme(mq.matches ? 'dark' : 'light');
+  mq.addEventListener('change', (e) => {
+    setDataTheme(e.matches ? 'dark' : 'light');
+  });
 }
