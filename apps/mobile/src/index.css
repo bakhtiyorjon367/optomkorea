@@ -7,16 +7,10 @@ body,
   padding: 0;
 }
 
-/* Safe area padding for iOS notch/dynamic island */
-ion-content {
-  --padding-top: var(--ion-safe-area-top, 0);
-  --padding-bottom: var(--ion-safe-area-bottom, 0);
-}
-
-/* Ensure tab bar respects safe area on iPhone */
-ion-tab-bar {
-  padding-bottom: var(--ion-safe-area-bottom, 0);
-}
+/* Note: don't pad ion-content for safe area — IonHeader (iOS mode) and
+   IonTabBar already reserve top/bottom insets. Adding it here doubles the
+   inset and creates a visible band below the header in Telegram's iOS
+   WebView (where safe-area-inset-top is non-zero). */
 
 /* Lucide icons inside tab buttons inherit tab color */
 ion-tab-button svg {
