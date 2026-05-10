@@ -1,6 +1,4 @@
 import {
-  IonBackButton,
-  IonButtons,
   IonContent,
   IonHeader,
   IonPage,
@@ -12,6 +10,7 @@ import {
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory, useParams } from 'react-router-dom';
+import { FloatingBackButton } from '../../components/shared/floating-back-button';
 import { useProduct } from '../../hooks/use-products';
 import { apiFileUrl } from '../../lib/product-images';
 
@@ -49,9 +48,6 @@ export function ProductImageFullPage() {
     <IonPage>
       <IonHeader className="ion-no-border">
         <IonToolbar style={{ '--background': 'rgba(0,0,0,0.65)', '--color': '#fff' }}>
-          <IonButtons slot="start">
-            <IonBackButton defaultHref={productId ? `/products/${productId}` : '/home'} text={t('common.back')} color="light" />
-          </IonButtons>
           {images.length > 1 && (
             <IonTitle style={{ color: '#fff', fontSize: 15 }}>
               {t('products.photoCounter', { current: safeIndex + 1, total: images.length })}
@@ -114,6 +110,7 @@ export function ProductImageFullPage() {
           </div>
         )}
       </IonContent>
+      <FloatingBackButton defaultHref={productId ? `/products/${productId}` : '/home'} />
     </IonPage>
   );
 }

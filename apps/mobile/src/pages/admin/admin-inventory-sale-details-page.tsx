@@ -1,6 +1,4 @@
 import {
-  IonBackButton,
-  IonButtons,
   IonChip,
   IonContent,
   IonHeader,
@@ -21,6 +19,7 @@ import { useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
+import { FloatingBackButton } from '../../components/shared/floating-back-button';
 import { useSalesAll } from '../../hooks/use-sales';
 import { firstLineItemForProduct, filterAndSortSalesForManagerProduct } from '../../lib/admin-inventory-filter-sales';
 import { formatDate, formatUZS } from '../../lib/format';
@@ -55,9 +54,6 @@ export function AdminInventorySaleDetailsPage() {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonButtons slot="start">
-            <IonBackButton defaultHref="/admin/inventory" text={t('common.back')} />
-          </IonButtons>
           <IonTitle>{nameFromState ?? t('admin.inventoryProductSales')}</IonTitle>
         </IonToolbar>
       </IonHeader>
@@ -135,6 +131,7 @@ export function AdminInventorySaleDetailsPage() {
           </IonList>
         )}
       </IonContent>
+      <FloatingBackButton defaultHref="/admin/inventory" />
     </IonPage>
   );
 }

@@ -163,3 +163,32 @@ ion-avatar {
   min-height: 50vh;
   box-sizing: border-box;
 }
+
+/* Floating back button: small semi-transparent circle above the bottom tab
+   bar. Reserved for inner pages (product detail, image viewer, drilldowns).
+   Plain rgba + backdrop-filter keeps it readable on light AND dark content. */
+.floating-back-btn {
+  position: fixed;
+  right: 16px;
+  bottom: calc(26px + var(--ion-safe-area-bottom, 0px) + 1px);
+  width: 54px;
+  height: 54px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(68, 68, 68, 0.55);
+  color: #fff;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(116, 8, 8, 0.25);
+  cursor: pointer;
+  z-index: 1000;
+  transition: transform 120ms ease, background-color 120ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+

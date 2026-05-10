@@ -236,7 +236,6 @@ export function AuthPage() {
 
         <div style={{ marginTop: 24 }}>
           <IonButton fill="clear" expand="block" routerLink="/home" style={{ maxWidth: 400, margin: '0 auto' }}>
-            {t('common.back')}
           </IonButton>
         </div>
 

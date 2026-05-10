@@ -1,5 +1,4 @@
 import {
-  IonBackButton,
   IonBadge,
   IonButton,
   IonButtons,
@@ -25,6 +24,7 @@ import { cubeOutline } from 'ionicons/icons';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { FloatingBackButton } from '../../components/shared/floating-back-button';
 import { useProduct } from '../../hooks/use-products';
 import { useCreateShipment, useShipmentsAll } from '../../hooks/use-shipments';
 import { useAuth } from '../../hooks/use-auth';
@@ -82,21 +82,18 @@ export function ProductDetailPage() {
 
   return (
     <IonPage>
-      <IonHeader>
-        <IonToolbar>
-          <IonButtons slot="start">
-            <IonBackButton defaultHref="/home" text={t('common.back')} />
-          </IonButtons>
-          {isAdmin && product && (
+      {isAdmin && product && (
+        <IonHeader>
+          <IonToolbar>
             <IonButtons slot="end">
               <IonButton onClick={() => { resetShipForm(); setShowShipmentModal(true); }}>
                 <IonIcon icon={cubeOutline} slot="start" />
                 {t('shipments.shipAgain')}
               </IonButton>
             </IonButtons>
-          )}
-        </IonToolbar>
-      </IonHeader>
+          </IonToolbar>
+        </IonHeader>
+      )}
       <IonContent>
         {isLoading ? (
           <div className="ion-padding">
@@ -308,6 +305,7 @@ export function ProductDetailPage() {
 
         <IonToast isOpen={!!toast} message={toast} duration={2000} onDidDismiss={() => setToast('')} />
       </IonContent>
+      <FloatingBackButton defaultHref="/home" />
     </IonPage>
   );
 }
