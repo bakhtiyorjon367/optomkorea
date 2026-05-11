@@ -1,6 +1,6 @@
 import type { IAuthUser } from '@koruz/types';
 import type { ReactNode } from 'react';
-import { createContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useMemo, useState } from 'react';
 
 type AuthContextValue = {
   user: IAuthUser | null;
@@ -68,11 +68,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Returns:
    *   void
    */
-  const login = (nextToken: string, nextUser: IAuthUser): void => {
+  const login = useCallback((nextToken: string, nextUser: IAuthUser): void => {
     localStorage.setItem('koruz_token', nextToken);
     localStorage.setItem('koruz_user', JSON.stringify(nextUser));
     setAuthState({ token: nextToken, user: nextUser });
-  };
+  }, []);
 
   /**
    * Clears local auth session and resets context state.
@@ -80,11 +80,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Returns:
    *   void
    */
-  const logout = (): void => {
+  const logout = useCallback((): void => {
     localStorage.removeItem('koruz_token');
     localStorage.removeItem('koruz_user');
     setAuthState({ token: null, user: null });
-  };
+  }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -94,7 +94,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       login,
       logout,
     }),
-    [token, user],
+    [login, logout, token, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

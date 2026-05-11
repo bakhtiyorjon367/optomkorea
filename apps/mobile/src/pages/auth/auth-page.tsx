@@ -12,7 +12,7 @@ import {
   IonIcon,
 } from '@ionic/react';
 import { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { sparklesOutline } from 'ionicons/icons';
 import { useAuth } from '../../hooks/use-auth';
@@ -42,6 +42,7 @@ function getRedirectPath(role: string): string {
 
 export function AuthPage() {
   const history = useHistory();
+  const location = useLocation();
   const { login, isAuthenticated, user } = useAuth();
   const { t } = useTranslation();
   const isMiniApp = isInsideTelegramMiniApp();
@@ -61,7 +62,7 @@ export function AuthPage() {
   }, [isAuthenticated, user, history]);
 
   useEffect(() => {
-    if (!isMiniApp || miniAppFallback) {
+    if (location.pathname !== '/auth' || !isMiniApp || miniAppFallback) {
       return;
     }
     if (localStorage.getItem('koruz_token')) {
@@ -104,7 +105,7 @@ export function AuthPage() {
     return () => {
       cancelled = true;
     };
-  }, [isMiniApp, miniAppFallback, history, login]);
+  }, [isMiniApp, miniAppFallback, history, location.pathname, login]);
 
   const handleLogin = async () => {
     if (!username.trim() || !password.trim()) {
