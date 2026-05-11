@@ -203,17 +203,17 @@
     "reduceWarning": "Sizning zahirangiz {{qty}} ga kamayadi"
   },
   "tabs": {
-    "products": "Mahsulotlar",
+    "products": "Parfumlar",
     "home": "Asosiy",
     "category": "Kategoriya",
     "search": "Qidiruv",
     "profile": "Profil",
-    "cart": "Savatcha",
+    "cart": "Savat",
     "checkin": "Qabul",
-    "sales": "Sotuvlar",
-    "inventory": "Inventar",
+    "sales": "Sotuv",
+    "inventory": "Ombor",
     "finance": "Moliya",
-    "users": "Foydalanuvchilar",
+    "users": "Users",
     "admin": "Admin"
   }
 }

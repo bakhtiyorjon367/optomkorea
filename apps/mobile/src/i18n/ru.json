@@ -83,7 +83,7 @@
     "unreceived": "Қабул қилинмаган",
     "partialReceived": "Қисман қабул",
     "notReceived": "Қабул қилинмаган",
-    "inTransit": "В пути",
+    "inTransit": "Юлда",
     "filterByType": "Тури бўйича"
   },
   "sales": {
@@ -111,8 +111,8 @@
     "paymentSuccess": "Тўлов муваффақиятли қўшилди",
     "fullyPaid": "Тўлиқ тўланган",
     "paymentExceedsRemaining": "Тўлов қолдиқдан ошмаслиги керак",
-    "priceExceedsList": "Цена за единицу не больше цены в списке (макс. {{max}})",
-    "initialPaymentExceedsTotal": "Первоначальный платёж не больше суммы продажи"
+    "priceExceedsList": "Бир dona наркси расмий нархдан ошмаслиги керак (макс: {{max}})",
+    "initialPaymentExceedsTotal": "Биринчи тўлов жaми суммадан ошмаслиги керак"
   },
   "finance": {
     "title": "Молия",
@@ -131,15 +131,15 @@
     "products": "Маҳсулотлар",
     "inventory": "Инвентар",
     "finance": "Молия",
-    "users": "Фойдаланувчилар",
+    "users": "Users",
     "credits": "Насиялар",
     "promoteUser": "Ролни ўзгартириш",
     "manageProducts": "Маҳсулотларни бошқариш",
-    "deleteProductTitle": "Удалить товар",
-    "deleteProductMessage": "Подтвердите удаление «{{name}}». Удаление возможно только если нет поставок, остатков, продаж, приёмок или перемещений.",
-    "deleteProductBlocked": "У товара есть история или остатки — сначала устраните связанные записи; удаление невозможно.",
-    "inventoryProductSales": "Продажи по товару (менеджер)",
-    "noSalesForThisProduct": "По этому товару нет продаж"
+    "deleteProductTitle": "Маҳсулотни ўчириш",
+    "deleteProductMessage": "«{{name}}» ни ўчиришни тасдиқласизми? Бу фақат жўнатишлар, ombor, sotuvlar, qabulnomalar ёки o'tkazmalar bo'lmasa amalga oshadi.",
+    "deleteProductBlocked": "Бу маҳсулотда тарихи ёки захира бор — аввал боғлиқ якунларини ҳал қилингандан кейин маҳсулотни ўчириш мумкин эмас.",
+    "inventoryProductSales": "Менежер: маҳсулот бўйича sotuvlar",
+    "noSalesForThisProduct": "Бу маҳсулот бўйича sotuvlar топилмади"
   },
   "profile": {
     "title": "Профил",
@@ -157,15 +157,15 @@
     "logout": "Чиқиш",
     "logoutConfirm": "Тизимдан чиқмоқчимисиз?",
     "memberSince": "Аъзо бўлган сана",
-    "language": "Язык"
+    "language": "Тил"
   },
   "cart": {
-    "maintenanceTitle": "На обслуживании",
-    "maintenanceSubtitle": "Мы работаем над системой заказов. Загляните позже!"
+    "maintenanceTitle": "Taмирлашда",
+    "maintenanceSubtitle": "Buyurtma tizimi ustida ishlayapmiz. Tez orada qaytib ko'ring!"
   },
   "search": {
-    "recent": "Недавние запросы",
-    "placeholder": "Поиск товаров"
+    "recent": "Қидирилганлар",
+    "placeholder": "Маҳсулот қидириш"
   },
   "shipments": {
     "title": "Жўнатмалар",
@@ -213,7 +213,7 @@
     "sales": "Сотувлар",
     "inventory": "Инвентар",
     "finance": "Молия",
-    "users": "Фойдаланувчилар",
+    "users": "Users",
     "admin": "Админ"
   }
 }

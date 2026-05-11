@@ -26,8 +26,6 @@ export type TelegramWebApp = {
   ready: () => void;
   expand: () => void;
   colorScheme: 'light' | 'dark';
-  disableVerticalSwipes?: () => void;
-  enableClosingConfirmation?: () => void;
   themeParams: TelegramThemeParams;
   BackButton: TelegramBackButton;
   onEvent?: (eventType: string, callback: () => void) => void;
@@ -62,9 +60,8 @@ export function isInsideTelegramMiniApp(): boolean {
 }
 
 /**
- * Initializes Telegram WebApp: signals readiness, expands the sheet, reduces
- * accidental swipe-to-close. Theme is owned by `bootstrapTheme()` in
- * `theme-bootstrap.ts` (colorScheme + themeParams + `themeChanged`).
+ * Initializes Telegram WebApp: signals readiness and expands the sheet.
+ * Theme is owned by `bootstrapTheme()` in `theme-bootstrap.ts`.
  *
  * Reason: Call once at app bootstrap before React mounts so the webview chrome
  * matches native Telegram apps like @BotFather.
@@ -77,13 +74,4 @@ export function initWebApp(): void {
 
   webApp.ready();
   webApp.expand();
-
-  // Bot API 7.7+ — vertical swipe no longer dismisses the Mini App.
-  if (typeof webApp.disableVerticalSwipes === 'function') {
-    webApp.disableVerticalSwipes();
-  }
-
-  if (typeof webApp.enableClosingConfirmation === 'function') {
-    webApp.enableClosingConfirmation();
-  }
 }

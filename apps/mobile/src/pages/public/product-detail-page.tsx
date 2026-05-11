@@ -97,7 +97,7 @@ export function ProductDetailPage() {
       <IonContent>
         {isLoading ? (
           <div className="ion-padding">
-            <IonSkeletonText animated style={{ width: '100%', height: 200, borderRadius: 12 }} />
+            <IonSkeletonText animated style={{ width: '100%', height: 400, borderRadius: 12 }} />
             <IonSkeletonText animated style={{ width: '70%', height: 28, marginTop: 16 }} />
             <IonSkeletonText animated style={{ width: '40%', height: 20, marginTop: 8 }} />
           </div>
@@ -136,7 +136,7 @@ export function ProductDetailPage() {
                         width: '100%',
                         minWidth: '100%',
                         maxWidth: '100%',
-                        height: 200,
+                        height: 400,
                         scrollSnapAlign: 'start',
                         scrollSnapStop: 'always',
                         boxSizing: 'border-box',
@@ -151,7 +151,7 @@ export function ProductDetailPage() {
                         src={apiFileUrl(img)}
                         style={{
                           width: '100%',
-                          height: 200,
+                          height: 400,
                           objectFit: 'cover',
                           pointerEvents: 'none',
                         }}
